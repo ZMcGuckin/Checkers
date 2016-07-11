@@ -1,2 +1,2 @@
 # Checkers
-A small Java Swing Graphics port of Checkers.
+A Java Swing Graphics created port of Checkers.
