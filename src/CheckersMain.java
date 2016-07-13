@@ -218,8 +218,7 @@ public class CheckersMain extends JFrame
    /** Initialize the game-board contents and the status */
    public void initGame() 
    {
-      for (int row = 0; row < ROWS; ++row) 
-      {
+      for (int row = 0; row < ROWS; ++row){
          for (int col = 0; col < COLS; ++col) 
          {
             if(row == 0 || row == 2)
