@@ -42,12 +42,11 @@ public class CheckersMain extends JFrame
       empty, redPlayer, blackPlayer, redKing, blackKing
    }
    private Seed currentPlayer;  // the current player
+   private Seed picked; //piece selected by mouse click
    private boolean rightPlayer;  //checks if the right piece was chosen in relation to the player
    
    private int lastRow;
-   private int lastCol;
-   private int rSelected;
-   private int cSelected;
+   private int lastCol;  
    
    private boolean moved;
    private boolean jumped;
@@ -69,17 +68,20 @@ public class CheckersMain extends JFrame
          //@Override
          public void mousePressed(MouseEvent e) // mouse-clicked handler
          {
-            int mouseX = e.getX();
-            int mouseY = e.getY();
-            // Get the row and column clicked
-            rSelected = mouseY / cellSize;
-            cSelected = mouseX / cellSize;
-
+        	//if the game is going
             if (currentState == GameState.playing) {
+            	int mouseX = e.getX();
+                int mouseY = e.getY();
+                // Get the row and column clicked
+                int rSelected = mouseY / cellSize;
+                int cSelected = mouseX / cellSize;
             	if (rSelected >= 0 && rSelected < ROWS && cSelected >= 0 && cSelected < COLS) {
             		if(currentPlayer == Seed.blackPlayer && (board[rSelected][cSelected] == Seed.blackPlayer || board[rSelected][cSelected] == Seed.blackKing)
-            				|| currentPlayer == Seed.redPlayer && (board[rSelected][cSelected] == Seed.redPlayer || board[rSelected][cSelected] == Seed.redKing)){
+            				|| currentPlayer == Seed.redPlayer && (board[rSelected][cSelected]== Seed.redPlayer || board[rSelected][cSelected] == Seed.redKing)){
+            			//The player picked their own piece
             			rightPlayer = true;
+            			//Keep that information of where the piece was
+            			picked = board[rSelected][cSelected];
             			lastRow = rSelected;
             			lastCol = cSelected;
             		}
@@ -90,157 +92,100 @@ public class CheckersMain extends JFrame
          }
          public void mouseReleased(MouseEvent e) 
 		{  // mouse-clicked handler
-	            int mouseX = e.getX();
-	            int mouseY = e.getY();
-	            // Get the row and column clicked
-	            int rSelected2 = mouseY / cellSize;
-	            int cSelected2 = mouseX / cellSize;
-	            
+        	 
 	            if (currentState == GameState.playing) 
 	            {
-	            	if (rSelected2 >= 0 && rSelected2 < ROWS && cSelected2 >= 0 && rightPlayer==true
-	            			&& cSelected2 < COLS && board[rSelected2][cSelected2] == Seed.empty) 
+	            	int mouseX = e.getX();
+		            int mouseY = e.getY();
+		            // Get the row and column clicked
+		            int rReleased = mouseY / cellSize;
+		            int cReleased = mouseX / cellSize;
+	            	if (rReleased >= 0 && rReleased < ROWS && cReleased >= 0 && cReleased < COLS && rightPlayer == true && board[rReleased][cReleased] == Seed.empty) 
 	                {
-	            		if((currentPlayer==Seed.blackPlayer&&board[rSelected][cSelected]==Seed.blackKing)||(currentPlayer==Seed.redPlayer&&board[rSelected][cSelected]==Seed.redKing))
-	            		{
-	            			if((rSelected2+1==lastRow) && (cSelected2+1==lastCol||cSelected2-1==lastCol) && canJump() == false)
-	            			{
-	            				board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing; // Make a move
+	            		if(!canJump()){
+	           				//Moving Up
+	           				if((rReleased+1==lastRow) && (cReleased+1==lastCol||cReleased-1==lastCol) && picked != Seed.redPlayer)
+	           				{
+	           					board[rReleased][cReleased] = picked; // Make a move
+	           					board[lastRow][lastCol] = Seed.empty;	
+	           					moved = true;
+	           				}
+	           				//Moving Down
+	           				else if((rReleased-1==lastRow) && (cReleased+1==lastCol||cReleased-1==lastCol) && picked != Seed.blackPlayer)
+	           				{
+	            				board[rReleased][cReleased] = picked; // Make a move
 	            				board[lastRow][lastCol] = Seed.empty;	
 	            				moved = true;
-	            			}
-	            			else if((rSelected2-1==lastRow) && (cSelected2+1==lastCol||cSelected2-1==lastCol) && canJump() == false)
-	            			{
-	            				board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing; // Make a move
-	            				board[lastRow][lastCol] = Seed.empty;	
-	            				moved = true;
-	            			}
-	            			else if((rSelected2+2==lastRow) && (cSelected2+2==lastCol))
-	            			{
-	            				if(board[rSelected2+1][cSelected2+1] != currentPlayer && board[rSelected2+1][cSelected2+1] != Seed.empty)
-	            				{
-	            					board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[lastRow+1][lastCol+1] = Seed.empty;
-	            					jumped = true;
-	            				}	
-	            			}
-	            			else if((rSelected2+2==lastRow) && (cSelected2-2==lastCol))
-	            			{
-	            				if(board[rSelected2+1][cSelected2-1] != currentPlayer && board[rSelected2+1][cSelected2-1] != Seed.empty)
-	            				{
-	            					board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing;; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2+1][cSelected2-1] = Seed.empty;
-	            					jumped = true;
-	            				}
-	            			}
-	            			else if((rSelected2-2==lastRow) && (cSelected2+2==lastCol))
-	            			{
-	            				if(board[rSelected2-1][cSelected2+1] != currentPlayer && board[rSelected2-1][cSelected2+1] != Seed.empty)
-	            				{
-	            					board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing;; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2-1][cSelected2+1] = Seed.empty;
-	            					jumped = true;
-	            				}	
-	            			}
-	            			else if((rSelected2-2==lastRow) && (cSelected2-2==lastCol))
-	            			{
-	            				if(board[rSelected2-1][cSelected2-1] != currentPlayer && board[rSelected2-1][cSelected2-1] != Seed.empty)
-	            				{
-	            					board[rSelected2][cSelected2] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing;; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2-1][cSelected2-1] = Seed.empty;
-	            					jumped = true;
-	            				}
 	            			}
 	            		}
-	            		else if(currentPlayer == Seed.redPlayer)
-	            		{
-	            			if((rSelected2-1==lastRow) && (cSelected2+1==lastCol||cSelected2-1==lastCol) && canJump() == false)
-	            			{
-	            				board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            				board[lastRow][lastCol] = Seed.empty;	
-	            				moved = true;
-	            			}
-	            			else if((rSelected2-2==lastRow) && (cSelected2+2==lastCol))
-	            			{
-	            				if(board[rSelected2-1][cSelected2+1] == Seed.blackPlayer || board[rSelected2-1][cSelected2+1] == Seed.blackKing)
-	            				{
-	            					board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2-1][cSelected2+1] = Seed.empty;
-	            					jumped = true;
-	            				}	
-	            			}
-	            			else if((rSelected2-2==lastRow) && (cSelected2-2==lastCol))
-	            			{
-	            				if(board[rSelected2-1][cSelected2-1] == Seed.blackPlayer || board[rSelected2-1][cSelected2-1] == Seed.blackKing)
-	            				{
-	            					board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2-1][cSelected2-1] = Seed.empty;
-	            					jumped = true;
-	            				}
-	            			}
+	            		//Otherwise a piece the player has, has to jump
+	            		else{
+	            			Seed kingType = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing;
+	            			//Jumping Up and Left
+            				if((rReleased+2==lastRow) && (cReleased+2==lastCol) && picked != Seed.redPlayer)
+            				{
+            					if(board[rReleased+1][cReleased+1] != currentPlayer && board[rReleased+1][cReleased+1] != kingType && board[rReleased+1][cReleased+1] != Seed.empty)
+            					{
+            						board[rReleased][cReleased] = picked; // Make a move
+            						board[lastRow][lastCol] = Seed.empty;
+            						board[rReleased+1][cReleased+1] = Seed.empty;
+            						jumped = true;
+            					}	
+            				}
+            				//Jumping Up and Right
+            				else if((rReleased+2==lastRow) && (cReleased-2==lastCol) && picked != Seed.redPlayer)
+            				{
+            					if(board[rReleased+1][cReleased-1] != currentPlayer && board[rReleased+1][cReleased-1] != kingType && board[rReleased+1][cReleased-1] != Seed.empty)
+            					{
+            						board[rReleased][cReleased] = picked; // Make a move
+            						board[lastRow][lastCol] = Seed.empty;
+            						board[rReleased+1][cReleased-1] = Seed.empty;
+            						jumped = true;
+            					}
+            				}
+            				//Jumping Down and Left
+            				else if((rReleased-2==lastRow) && (cReleased+2==lastCol) && picked != Seed.blackPlayer)
+            				{
+            					if(board[rReleased-1][cReleased+1] != currentPlayer && board[rReleased-1][cReleased+1] != kingType && board[rReleased-1][cReleased+1] != Seed.empty)
+            					{
+            						board[rReleased][cReleased] = picked; // Make a move
+            						board[lastRow][lastCol] = Seed.empty;
+            						board[rReleased-1][cReleased+1] = Seed.empty;
+            						jumped = true;
+            					}	
+            				}
+            				//Jumping Down and Right
+            				else if((rReleased-2==lastRow) && (cReleased-2==lastCol) && picked != Seed.blackPlayer)
+            				{
+            					if(board[rReleased-1][cReleased-1] != currentPlayer && board[rReleased-1][cReleased-1] != kingType && board[rReleased-1][cReleased-1] != Seed.empty)
+            					{
+            						board[rReleased][cReleased] = picked; // Make a move
+            						board[lastRow][lastCol] = Seed.empty;
+            						board[rReleased-1][cReleased-1] = Seed.empty;
+            						jumped = true;
+            					}
+            				}
 	            		}
-	            		else if(currentPlayer == Seed.blackPlayer)
-	            		{
-	            			if((rSelected2+1==lastRow) && (cSelected2+1==lastCol||cSelected2-1==lastCol) && canJump() == false)
-	            			{
-	            				board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            				board[lastRow][lastCol] = Seed.empty;	
-	            				moved = true;
-	            			}
-	            			else if((rSelected2+2==lastRow) && (cSelected2+2==lastCol))
-	            			{
-	            				if(board[rSelected2+1][cSelected2+1] == Seed.redPlayer || board[rSelected2+1][cSelected2+1] == Seed.redKing)
-	            				{
-	            					board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2+1][cSelected2+1] = Seed.empty;
-	            					jumped = true;
-	            				}	
-	            			}
-	            			else if((rSelected2+2==lastRow) && (cSelected2-2==lastCol))
-	            			{
-	            				if(board[rSelected2+1][cSelected2-1] == Seed.redPlayer || board[rSelected2+1][cSelected2-1] == Seed.redKing)
-	            				{
-	            					board[rSelected2][cSelected2] = currentPlayer; // Make a move
-	            					board[lastRow][lastCol] = Seed.empty;
-	            					board[rSelected2+1][cSelected2-1] = Seed.empty;
-	            					jumped = true;
-	            				}
-	            			}
-	            		}
-	                }
-	               
-	            }
-	            if(currentPlayer == Seed.redPlayer && rSelected2 == 7 && (moved == true || jumped == true))
-	            {
-	            	board[rSelected2][cSelected2] = Seed.redKing;
-	            	//Switch player
-	            	currentPlayer = (currentPlayer == Seed.redPlayer) ? Seed.blackPlayer : Seed.redPlayer;
-	            	rightPlayer = false;
-	            	jumps = 0;
-	            }
-	            else if(currentPlayer == Seed.blackPlayer && rSelected2 == 0 && (moved == true || jumped == true))
-	            {
-	            	board[rSelected2][cSelected2] = Seed.blackKing;
-	            	//Switch player
-	            	currentPlayer = (currentPlayer == Seed.redPlayer) ? Seed.blackPlayer : Seed.redPlayer;
-	            	rightPlayer = false;
-	            	jumps = 0;
-	            }
-	            else if(multiJump(rSelected2, cSelected2) && jumped == true)
-	            	jumps += 1;
-	            else if(moved == true || jumped == true)
-	            {
-	            	//Switch player
-	            	currentPlayer = (currentPlayer == Seed.redPlayer) ? Seed.blackPlayer : Seed.redPlayer;
-	            	rightPlayer = false;
-	            	jumps = 0;
+	            	}
+	            	//King the Player
+		            if((rReleased == 7 || rReleased == 0) && (moved == true || jumped == true))
+			        {
+		            	board[rReleased][cReleased] = (currentPlayer == Seed.blackPlayer) ? Seed.blackKing : Seed.redKing;; // Make them a King
+			            //Switch player
+			            currentPlayer = (currentPlayer == Seed.redPlayer) ? Seed.blackPlayer : Seed.redPlayer;
+			            rightPlayer = false;
+			            jumps = 0;
+			        }
+		            //If the player jumped and didn't become a king, check to see if they have more jumps
+			        else if(jumped == true && canJumpAgain(rReleased, cReleased))
+			           	jumps += 1;
+			        else if(moved == true || jumped == true)
+			        {
+			           	//Switch player
+			           	currentPlayer = (currentPlayer == Seed.redPlayer) ? Seed.blackPlayer : Seed.redPlayer;
+			           	rightPlayer = false;
+			           	jumps = 0;
+			        }
 	            }
 	            
 	            repaint();  // Call-back paintComponent().
@@ -303,7 +248,7 @@ public class CheckersMain extends JFrame
       }
       
       currentState = GameState.playing; // ready to play
-      currentPlayer = Seed.redPlayer;       // redPlayer plays first
+      currentPlayer = Seed.redPlayer;  // redPlayer plays first
    }
 
    /* Update the currentState after the player with "theSeed" has placed on
@@ -323,6 +268,7 @@ public class CheckersMain extends JFrame
 	      {
 	         for (int col = 0; col < COLS; ++col) 
 	         {
+	        	 //Check to see if the player has any pieces left on the board, if not they lose
 	        	 if(currentPlayer == Seed.redPlayer)
 	        	 {
 	        		 if (board[row][col] == currentPlayer || board[row][col] == Seed.redKing)
@@ -345,7 +291,7 @@ public class CheckersMain extends JFrame
 	         for (int col = 0; col < COLS; ++col) 
 	         {
 	        	
-	            if(currentPlayer == Seed.redPlayer && board[row][col] == Seed.redPlayer) 
+	            if(currentPlayer == Seed.redPlayer && (board[row][col] == Seed.redPlayer || board[row][col] == Seed.redKing)) 
 	            {
 	            	if(row+2<ROWS)
 	            	{
@@ -360,86 +306,63 @@ public class CheckersMain extends JFrame
 	            				return true;
 	            		}
 	            	}
+	            	//Handle Backwards Jumping for kings
+            		if(board[row][col] == Seed.redKing){
+            			if(row-2>=0)
+    	            	{
+    	            		if(col+2<COLS)
+    	            		{
+    	            			if((board[row-1][col+1] == Seed.blackPlayer || board[row-1][col+1] == Seed.blackKing) && board[row-2][col+2] == Seed.empty)
+    	            				return true;
+    	            		}
+    	            		if(col-2>=0)
+    	            		{
+    	            			if((board[row-1][col-1] == Seed.blackPlayer || board[row-1][col-1] == Seed.blackKing) && board[row-2][col-2] == Seed.empty)
+    	            				return true;
+    	            		}
+    	            	}
+            		}
 	            }
-	            else if(currentPlayer == Seed.redPlayer && board[row][col] == Seed.redKing) 
-	            {
-	            	if(row+2<ROWS)
-	            	{
-	            		if(col+2<COLS)
-	            		{
-	            			if((board[row+1][col+1] == Seed.blackPlayer || board[row+1][col+1] == Seed.blackKing) && board[row+2][col+2] == Seed.empty)
-	            				return true;
-	            		}
-	            		if(col-2>=0)
-	            		{
-	            			if((board[row+1][col-1] == Seed.blackPlayer || board[row+1][col-1] == Seed.blackKing) && board[row+2][col-2] == Seed.empty)
-	            				return true;
-	            		}
-	            	}
-	            	if(row-2>=0)
-	            	{
-	            		if(col+2<COLS)
-	            		{
-	            			if((board[row-1][col+1] == Seed.blackPlayer || board[row-1][col+1] == Seed.blackKing) && board[row-2][col+2] == Seed.empty)
-	            				return true;
-	            		}
-	            		if(col-2>=0)
-	            		{
-	            			if((board[row-1][col-1] == Seed.blackPlayer || board[row-1][col-1] == Seed.blackKing) && board[row-2][col-2] == Seed.empty)
-	            				return true;
-	            		}
-	            	}
-	            }
-	            else if(currentPlayer == Seed.blackPlayer && board[row][col] == Seed.blackPlayer) 
+	            else if(currentPlayer == Seed.blackPlayer && (board[row][col] == Seed.blackPlayer || board[row][col] == Seed.blackKing)) 
 	            {
 	            	if(row-2>=0)
 	            	{
 	            		if(col+2<COLS)
 	            		{
-	            			if((board[row-1][col+1] == Seed.redPlayer || board[row-1][col+1] == Seed.redKing) && board[row-2][col+2] == Seed.empty)
+	            			if((board[row-1][col+1] == Seed.redPlayer || board[row-1][col+1] == Seed.redKing) && board[row-2][col+2] == Seed.empty){
 	            				return true;
+	            			}
 	            		}
 	            		if(col-2>=0)
 	            		{
-	            			if((board[row-1][col-1] == Seed.redPlayer || board[row-1][col-1] == Seed.redKing) && board[row-2][col-2] == Seed.empty)
+	            			if((board[row-1][col-1] == Seed.redPlayer || board[row-1][col-1] == Seed.redKing) && board[row-2][col-2] == Seed.empty){
 	            				return true;
+	            			}
 	            		}
 	            	}
-	            }
-	            else if(currentPlayer == Seed.blackPlayer && board[row][col] == Seed.blackKing) 
-	            {
-	            	if(row+2<ROWS)
-	            	{
-	            		if(col+2<COLS)
-	            		{
-	            			if((board[row+1][col+1] == Seed.redPlayer || board[row+1][col+1] == Seed.redKing) && board[row+2][col+2] == Seed.empty)
-	            				return true;
-	            		}
-	            		if(col-2>=0)
-	            		{
-	            			if((board[row+1][col-1] == Seed.redPlayer || board[row+1][col-1] == Seed.redKing)&& board[row+2][col-2] == Seed.empty)
-	            				return true;
-	            		}
-	            	}
-	            	if(row-2>=0)
-	            	{
-	            		if(col+2<COLS)
-	            		{
-	            			if((board[row-1][col+1] == Seed.redPlayer || board[row-1][col+1] == Seed.redKing) && board[row-2][col+2] == Seed.empty)
-	            				return true;
-	            		}
-	            		if(col-2>=0)
-	            		{
-	            			if((board[row-1][col-1] == Seed.redPlayer || board[row-1][col-1] == Seed.redKing) && board[row-2][col-2] == Seed.empty)
-	            				return true;
-	            		}
+	            	//Handle backwards jumping for king
+	            	if(board[row][col] == Seed.blackKing){
+	            		if(row+2<ROWS)
+		            	{
+		            		if(col+2<COLS)
+		            		{
+		            			if((board[row+1][col+1] == Seed.redPlayer || board[row+1][col+1] == Seed.redKing) && board[row+2][col+2] == Seed.empty)
+		            				return true;
+		            		}
+		            		if(col-2>=0)
+		            		{
+		            			if((board[row+1][col-1] == Seed.redPlayer || board[row+1][col-1] == Seed.redKing)&& board[row+2][col-2] == Seed.empty)
+		            				return true;
+		            		}
+		            	}
 	            	}
 	            }
 	         }
 	      }
+	   //return false if true wasn't already returned
       return false;
    }
-   public boolean multiJump(int row, int col) 
+   public boolean canJumpAgain(int row, int col) 
    {
 	   if(currentPlayer == Seed.redPlayer)
 		{
@@ -460,38 +383,26 @@ public class CheckersMain extends JFrame
 				   }
 			   }
 		   }
+		   //Handle backwards jumps for kings
+		   if(board[row][col] == Seed.redKing){
+			   if(row-2>=0)
+		       	{
+		       		if(col+2<COLS)
+		       		{
+		       			if((board[row-1][col+1] == Seed.blackPlayer || board[row-1][col+1] == Seed.blackKing) && board[row-2][col+2] == Seed.empty)
+		       				return true;
+		       		}
+		       		if(col-2>=0)
+		       		{
+		       			if((board[row-1][col-1] == Seed.blackPlayer || board[row-1][col-1] == Seed.blackKing) && board[row-2][col-2] == Seed.empty)
+		       				return true;
+		       		}
+		       	}
+		   }
 		}
-	   if(currentPlayer == Seed.redPlayer && board[row][col] == Seed.redKing) 
-       {
-       	if(row+2<ROWS)
-       	{
-       		if(col+2<COLS)
-       		{
-       			if((board[row+1][col+1] == Seed.blackPlayer || board[row+1][col+1] == Seed.blackKing) && board[row+2][col+2] == Seed.empty)
-       				return true;
-       		}
-       		if(col-2>=0)
-       		{
-       			if((board[row+1][col-1] == Seed.blackPlayer || board[row+1][col-1] == Seed.blackKing) && board[row+2][col-2] == Seed.empty)
-       				return true;
-       		}
-       	}
-       	if(row-2>=0)
-       	{
-       		if(col+2<COLS)
-       		{
-       			if((board[row-1][col+1] == Seed.blackPlayer || board[row-1][col+1] == Seed.blackKing) && board[row-2][col+2] == Seed.empty)
-       				return true;
-       		}
-       		if(col-2>=0)
-       		{
-       			if((board[row-1][col-1] == Seed.blackPlayer || board[row-1][col-1] == Seed.blackKing) && board[row-2][col-2] == Seed.empty)
-       				return true;
-       		}
-       	}
-       }
-	   if(currentPlayer == Seed.blackPlayer)
-		{
+	   //The current player is black
+	   else
+	   {
 		   if(row-2>=0)
 		   {
 			   if(col+2<COLS)
@@ -509,36 +420,22 @@ public class CheckersMain extends JFrame
 				   }
 			   }
 		   }
+		   if(board[row][col] == Seed.blackKing){
+			   if(row+2<ROWS)
+		       	{
+		       		if(col+2<COLS)
+		       		{
+		       			if((board[row+1][col+1] == Seed.redPlayer || board[row+1][col+1] == Seed.redKing) && board[row+2][col+2] == Seed.empty)
+		       				return true;
+		       		}
+		       		if(col-2>=0)
+		       		{
+		       			if((board[row+1][col-1] == Seed.redPlayer || board[row+1][col-1] == Seed.redKing)&& board[row+2][col-2] == Seed.empty)
+		       				return true;
+		       		}
+		       	}
+		   }
 		}
-	   if(currentPlayer == Seed.blackPlayer && board[row][col] == Seed.blackKing) 
-       {
-       	if(row+2<ROWS)
-       	{
-       		if(col+2<COLS)
-       		{
-       			if((board[row+1][col+1] == Seed.redPlayer || board[row+1][col+1] == Seed.redKing) && board[row+2][col+2] == Seed.empty)
-       				return true;
-       		}
-       		if(col-2>=0)
-       		{
-       			if((board[row+1][col-1] == Seed.redPlayer || board[row+1][col-1] == Seed.redKing)&& board[row+2][col-2] == Seed.empty)
-       				return true;
-       		}
-       	}
-       	if(row-2>=0)
-       	{
-       		if(col+2<COLS)
-       		{
-       			if((board[row-1][col+1] == Seed.redPlayer || board[row-1][col+1] == Seed.redKing) && board[row-2][col+2] == Seed.empty)
-       				return true;
-       		}
-       		if(col-2>=0)
-       		{
-       			if((board[row-1][col-1] == Seed.redPlayer || board[row-1][col-1] == Seed.redKing) && board[row-2][col-2] == Seed.empty)
-       				return true;
-       		}
-       	}
-       }
       return false;
    }
 
@@ -554,13 +451,13 @@ public class CheckersMain extends JFrame
          setBackground(Color.WHITE); // set its background color
 
          // Draw the Seeds of all the cells if they are not empty
-         // Use Graphics2D which allows us to set the pen's stroke
+         // Use Graphics2D
          Graphics2D g2d = (Graphics2D)g;
          g2d.setStroke(new BasicStroke(symbolStrokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));  // Graphics2D only
          BufferedImage bg = null;
 		 try 
 		 {
-			 bg = ImageIO.read(new File("data/rbg.png"));
+			 bg = ImageIO.read(new File("src/resources/rbg.png"));
 		 } 
 		 catch (Exception e) 
 		 {
@@ -573,7 +470,7 @@ public class CheckersMain extends JFrame
             {
                int x1 = col * cellSize + cellPadding;
                int y1 = row * cellSize + cellPadding;
-               /*
+               /*Grid Lines
                if((row%2 != 0 && col%2 != 0) || (row%2 == 0 && col%2 == 0))
                {
             	   g2d.setColor(Color.LIGHT_GRAY);
@@ -582,11 +479,11 @@ public class CheckersMain extends JFrame
                */
                if (board[row][col] == Seed.redPlayer) 
                {
-            	   //g2d.setColor(Color.RED);
+            	   //g2d.setColor(Color.RED); Red painted Symbol
                    //g2d.fillOval(x1, y1, symbolSize, symbolSize);
                    BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("data/red.png"));
+						img = ImageIO.read(new File("src/resources/red.png"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -594,11 +491,11 @@ public class CheckersMain extends JFrame
                }  
                else if (board[row][col] == Seed.blackPlayer) 
                {
-            	   //g2d.setColor(Color.BLACK);
+            	   //g2d.setColor(Color.BLACK); Black painted Symbol
                    //g2d.fillOval(x1, y1, symbolSize, symbolSize);
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("data/black.png"));
+						img = ImageIO.read(new File("src/resources/black.png"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -607,7 +504,7 @@ public class CheckersMain extends JFrame
                else if (board[row][col] == Seed.redKing) 
                {
             	   /*
-            	   g2d.setColor(Color.RED);
+            	   g2d.setColor(Color.RED); Red painted King
                    g2d.fillOval(x1, y1, symbolSize, symbolSize);
                    g2d.setColor(Color.YELLOW);
                    g2d.drawLine(x1+15, y1+35, x1+35, y1+20);
@@ -616,7 +513,7 @@ public class CheckersMain extends JFrame
                    */
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("data/redKing.png"));
+						img = ImageIO.read(new File("src/resources/redKing.png"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -625,7 +522,7 @@ public class CheckersMain extends JFrame
                else if (board[row][col] == Seed.blackKing) 
                {
             	   /*
-            	   g2d.setColor(Color.BLACK);
+            	   g2d.setColor(Color.BLACK); Black painted King
                    g2d.fillOval(x1, y1, symbolSize, symbolSize);
                    g2d.setColor(Color.YELLOW);
                    g2d.drawLine(x1+15, y1+35, x1+35, y1+20);
@@ -634,7 +531,7 @@ public class CheckersMain extends JFrame
                    */
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("data/blackKing.png"));
+						img = ImageIO.read(new File("src/resources/blackKing.png"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -643,7 +540,7 @@ public class CheckersMain extends JFrame
             }
          }
          
-         // Draw the grid-lines
+         // Draw the grid-lines for when not using pictures
          /*
          g.setColor(Color.GRAY);
          for (int row = 1; row < ROWS; ++row) 
