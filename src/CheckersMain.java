@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -456,7 +456,8 @@ public class CheckersMain extends JFrame
          BufferedImage bg = null;
 		 try 
 		 {
-			 bg = ImageIO.read(new File("src/resources/rbg.png"));
+			 URL url = CheckersMain.class.getResource("/resources/rbg.png");
+			 bg = ImageIO.read(url);
 		 } 
 		 catch (Exception e) 
 		 {
@@ -482,7 +483,8 @@ public class CheckersMain extends JFrame
                    //g2d.fillOval(x1, y1, symbolSize, symbolSize);
                    BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("src/resources/red.png"));
+						URL url = CheckersMain.class.getResource("/resources/red.png");
+						img = ImageIO.read(url);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -494,7 +496,8 @@ public class CheckersMain extends JFrame
                    //g2d.fillOval(x1, y1, symbolSize, symbolSize);
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("src/resources/black.png"));
+						URL url = CheckersMain.class.getResource("/resources/black.png");
+						img = ImageIO.read(url);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -512,7 +515,8 @@ public class CheckersMain extends JFrame
                    */
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("src/resources/redKing.png"));
+						URL url = CheckersMain.class.getResource("/resources/redKing.png");
+						img = ImageIO.read(url);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -530,7 +534,8 @@ public class CheckersMain extends JFrame
                    */
             	   BufferedImage img = null;
 					try {
-						img = ImageIO.read(new File("src/resources/blackKing.png"));
+						URL url = CheckersMain.class.getResource("/resources/blackKing.png");
+						img = ImageIO.read(url);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
